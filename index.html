@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+    <link rel="stylesheet" href="css/bootstrap.rtl.min.css" />
+    <script src="js/main.js"></script>
+    <script src="js/jquery.js"></script>
+    <script src="js/gsap.min.js"></script>
+    <link rel="stylesheet" href="css/style.css" />
+  </head>
+  <body>
+    <div class="container-fluid m-5 d-relative" id="reciters"></div>
+    <div class="player" id="player">
+      <div class="back" onclick="back()">BACK</div>
+      <video autoplay muted loop id="myVideo">
+        <source
+          src="https://vod-progressive.akamaized.net/exp=1710497033~acl=%2Fvimeo-transcode-storage-prod-us-central1-h264-2160p%2F01%2F3209%2F11%2F291047369%2F1103261600.mp4~hmac=64ad903aaedadd9a6af2bae60612ea68a5ef0b6327d64d58c52a76b374201b41/vimeo-transcode-storage-prod-us-central1-h264-2160p/01/3209/11/291047369/1103261600.mp4?download=1&filename=pexels_videos_1437396+%282160p%29.mp4"
+          type="video/mp4"
+        />
+      </video>
+
+      <!-- Optional: some overlay text to descr1ibe the video -->
+      <div class="content">
+        <div class="row">
+          <div class="col">
+            <div class="surah-playing d-flex">
+              <div class="controls">
+                <!-- <img src="images/play.svg" /> -->
+              </div>
+              <h1 class="surah-title"></h1>
+              <!-- subtitle reciter-->
+              <h2 class="reciter-subtitle"></h2>
+            </div>
+          </div>
+          <div class="col"></div>
+       
+        </div>
+      </div>
+    </div>
+    <!-- <script src="http://localhost:35729/livereload.js"></script> -->
+
+  </body>
+</html>
