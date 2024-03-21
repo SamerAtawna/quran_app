@@ -5,6 +5,8 @@ var suwar = [];
 var activeReciter = null;
 var activeSura = null;
 var audio = new Audio(null);
+var letters = [];
+var recitersData = [];
 
 //Initialize function
 var init = function () {
@@ -23,14 +25,19 @@ var init = function () {
   document.addEventListener("keydown", function (e) {
     switch (e.keyCode) {
       case 37: //LEFT arrow
+        left();
         break;
       case 38: //UP arrow
+        up();
         break;
       case 39: //RIGHT arrow
+        right();
         break;
       case 40: //DOWN arrow
+        down();
         break;
       case 13: //OK button
+        ok();
         break;
       case 10009: //RETURN button
         tizen.application.getCurrentApplication().exit();
@@ -68,6 +75,7 @@ function getReciters() {
     .then((response) => response.json())
     .then((data) => {
       console.log(data);
+      this.recitersData = data;
       let reciters = data.reciters;
       //create reciters list by letter
       let recitersList = {};
@@ -79,7 +87,13 @@ function getReciters() {
         recitersList[letter].push(reciter);
       });
       console.log(recitersList);
+      console.log(this.letters);
       this.reciters = recitersList;
+      // loop reciters and insert keys into letters array
+      for (const letter in recitersList) {
+        this.letters.push(letter);
+      }
+
       //create reciters list which each row container the names of the reciters by letter and first item on row is the letter
       let recitersListHtml = "";
 
@@ -107,7 +121,11 @@ function getReciters() {
         x: -100,
         stagger: 0.1,
       });
+      const firstReciter = document.querySelector(".reciter-name-1");
+      firstReciter.classList.add("active");
+      this.activeReciter = reciters[0];
     });
+  //set first reciter as active
 }
 
 function getSuwar() {
@@ -271,3 +289,227 @@ back = () => {
 Promise.all([getReciters(), getSuwar()]).then(() => {
   console.log("All data fetched");
 });
+function left() {
+  // move the active class to the left
+  const activeReciter = document.querySelector(".active");
+  const nextReciter = activeReciter.nextElementSibling;
+  if (!nextReciter) return;
+  if (nextReciter) {
+    activeReciter.classList.remove("active");
+    nextReciter.classList.add("active");
+    nextReciter.scrollIntoView({ behavior: "smooth", block: "center" });
+    // scale the active reciter
+    gsap.to(nextReciter, {
+      duration: 0.5,
+      scale: 1.3,
+    });
+    //reset the scale to 1 on siblings
+    setTimeout(() => {
+      const siblings = nextReciter.parentElement.children;
+      for (let i = 0; i < siblings.length; i++) {
+        if (siblings[i] !== nextReciter) {
+          gsap.to(siblings[i], {
+            duration: 0.5,
+            scale: 1,
+          });
+        }
+      }
+    }, 0);
+  }
+  // get active reciter by class active , first class contains reciter-id
+  const newActiveReciter = document.querySelector(".active");
+  const activeReciterId = newActiveReciter.classList[0].split("-")[2];
+  this.activeReciter = this.recitersData.reciters.find(
+    (reciter) => reciter.id === parseInt(activeReciterId)
+  );
+  console.log(activeReciterId);
+  console.log(this.activeReciter);
+}
+function right() {
+  // move the active class to the right
+  const activeReciter = document.querySelector(".active");
+  const prevReciter = activeReciter.previousElementSibling;
+  // check if prevReciter class containe reciter-letter if  return
+  if (prevReciter.classList.contains("reciter-letter")) return;
+  if (prevReciter) {
+    activeReciter.classList.remove("active");
+    prevReciter.classList.add("active");
+    prevReciter.scrollIntoView({ behavior: "smooth", block: "center" });
+    // scale the active reciter
+    gsap.to(prevReciter, {
+      duration: 0.5,
+      scale: 1.3,
+    });
+    //reset the scale to 1 on siblings
+    setTimeout(() => {
+      const siblings = prevReciter.parentElement.children;
+      for (let i = 0; i < siblings.length; i++) {
+        if (siblings[i] !== prevReciter) {
+          gsap.to(siblings[i], {
+            duration: 0.5,
+            scale: 1,
+          });
+        }
+      }
+    }, 0);
+  }
+  debugger;
+  const newActiveReciter = document.querySelector(".active");
+  const activeReciterId = newActiveReciter.classList[0].split("-")[2];
+  this.activeReciter = this.recitersData.reciters.find(
+    (reciter) => reciter.id === parseInt(activeReciterId)
+  );
+  console.log(activeReciterId);
+  console.log(this.activeReciter);
+}
+function down() {
+  debugger;
+  //check if reciter-suras class is visible
+  const suras = document.querySelector(
+    `.reciter-suras-${activeReciter.name.trim().charAt(0)}`
+  );
+  if (suras.style.display === "flex") {
+    //move the active class to first sura
+    const activeSura = suras.children[0];
+    activeSura.classList.add("active");
+    //scroll to the active sura
+    activeSura.scrollIntoView({ behavior: "smooth", block: "center" });
+    // scale the active sura
+    gsap.to(activeSura, {
+      duration: 0.5,
+      scale: 1.3,
+    });
+    //reset the scale to 1 on siblings
+    setTimeout(() => {
+      const siblings = activeSura.parentElement.children;
+      for (let i = 0; i < siblings.length; i++) {
+        if (siblings[i] !== activeSura) {
+          gsap.to(siblings[i], {
+            duration: 0.5,
+            scale: 1,
+          });
+        }
+      }
+    }, 0);
+    return;
+  }
+  // move the active class to the next row by detecting the active reciter letter
+  // const activeReciter = document.querySelector(".active");
+  // get the first letter of the active reciter
+  const letter = activeReciter.name.trim().charAt(0);
+  //find the next letter
+  let nextLetter = this.letters[this.letters.indexOf(letter) + 1];
+  if (!nextLetter) return;
+  //remove active class from the other reciters not only the siblings
+  document.querySelectorAll(".active").forEach((reciter) => {
+    reciter.classList.remove("active");
+  });
+  //reset scale to 1 on all reciters classes starting with reciter-name-
+  document.querySelectorAll('[class^="reciter-name-"]').forEach((reciter) => {
+    gsap.to(reciter, {
+      duration: 0.5,
+      scale: 1,
+    });
+  });
+
+  const reciterListRows = document.querySelectorAll(".reciter-list-row");
+  let nextRow = null;
+  reciterListRows.forEach((row) => {
+    if (row.children[0].innerText === nextLetter) {
+      nextRow = row;
+    }
+  });
+  if (nextRow) {
+    const reciterName = nextRow.children[1];
+    reciterName.classList.add("active");
+    reciterName.scrollIntoView({ behavior: "smooth", block: "center" });
+    // scale the active reciter
+    gsap.to(reciterName, {
+      duration: 0.5,
+      scale: 1.3,
+    });
+    //reset the scale to 1 on siblings
+    setTimeout(() => {
+      const siblings = reciterName.parentElement.children;
+      for (let i = 0; i < siblings.length; i++) {
+        if (siblings[i] !== reciterName) {
+          gsap.to(siblings[i], {
+            duration: 0.5,
+            scale: 1,
+          });
+        }
+      }
+    }, 0);
+  }
+
+  // get active reciter by class active , first class contains reciter-id
+  const newActiveReciter = document.querySelector(".active");
+  const activeReciterId = newActiveReciter.classList[0].split("-")[2];
+  this.activeReciter = this.recitersData.reciters.find(
+    (reciter) => reciter.id === parseInt(activeReciterId)
+  );
+}
+function ok() {
+  // exapnd suras for the active reciter
+  const activeReciter = document.querySelector(".active");
+  const activeReciterId = activeReciter.classList[0].split("-")[2];
+  const letter = activeReciter.innerText.trim().charAt(0);
+  expandSuras(letter, parseInt(activeReciterId));
+}
+function up() {
+  // move the active class to the previous row by detecting the active reciter letter
+  // const activeReciter = document.querySelector(".active");
+  // get the first letter of the active reciter
+  const letter = activeReciter.name.trim().charAt(0);
+  //find the next letter
+  let prevLetter = this.letters[this.letters.indexOf(letter) - 1];
+  if (!prevLetter) return;
+  //remove active class from the other reciters not only the siblings
+  document.querySelectorAll(".active").forEach((reciter) => {
+    reciter.classList.remove("active");
+  });
+  //reset scale to 1 on all reciters classes starting with reciter-name-
+  document.querySelectorAll('[class^="reciter-name-"]').forEach((reciter) => {
+    gsap.to(reciter, {
+      duration: 0.5,
+      scale: 1,
+    });
+  });
+
+  const reciterListRows = document.querySelectorAll(".reciter-list-row");
+  let prevRow = null;
+  reciterListRows.forEach((row) => {
+    if (row.children[0].innerText === prevLetter) {
+      prevRow = row;
+    }
+  });
+  if (prevRow) {
+    const reciterName = prevRow.children[1];
+    reciterName.classList.add("active");
+    reciterName.scrollIntoView({ behavior: "smooth", block: "center" });
+    // scale the active reciter
+    gsap.to(reciterName, {
+      duration: 0.5,
+      scale: 1.3,
+    });
+    //reset the scale to 1 on siblings
+    setTimeout(() => {
+      const siblings = reciterName.parentElement.children;
+      for (let i = 0; i < siblings.length; i++) {
+        if (siblings[i] !== reciterName) {
+          gsap.to(siblings[i], {
+            duration: 0.5,
+            scale: 1,
+          });
+        }
+      }
+    }, 0);
+  }
+
+  // get active reciter by class active , first class contains reciter-id
+  const newActiveReciter = document.querySelector(".active");
+  const activeReciterId = newActiveReciter.classList[0].split("-")[2];
+  this.activeReciter = this.recitersData.reciters.find(
+    (reciter) => reciter.id === parseInt(activeReciterId)
+  );
+}
