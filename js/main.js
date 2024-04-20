@@ -69,7 +69,47 @@ function checkTime(i) {
   }
   return i;
 }
+function downloadWithTizen() {
+  var url = "https://www.mp3quran.net/api/v3/reciters?language=ar";
+  //check if file exists
+  var file = "wgt-private-tmp/reciters.json";
+  var fileObj = new tizen.filesystem.isFile(file);
+  if (fileObj.exists()) {
+    console.log("File exists");
+    return;
+  }
+  var downloadRequest = new tizen.DownloadRequest(url, "wgt-private-tmp");
+  tizen.download.start(downloadRequest);
+  console.log("File downloaded");
+  tizen.download.setListener(downloadRequest.id, {
+    onprogress: function (id, receivedSize, totalSize) {
+      console.log("Received: " + receivedSize + " of " + totalSize);
+    },
+    onpaused: function () {
+      console.log("Download paused");
+    },
+    oncanceled: function () {
+      console.log("Download canceled");
+    },
+    oncompleted: function (path) {
+      console.log("Download completed: " + path);
+      //file name
+      var fileName = path.split("/").pop();
+  //file content
+      var fileContent = tizen.filesystem.openFile("wgt-private-tmp/" + fileName, "r");
+      
+      console.log(fileContent);
+
+    },
+    onfailed: function (error) {
+      console.log("Download failed: " + error.name);
+    },
+  });
+
+
+}
 function getReciters() {
+  downloadWithTizen();
   var url = baseUrl + "/reciters?language=ar";
   return fetch(url)
     .then((response) => response.json())
